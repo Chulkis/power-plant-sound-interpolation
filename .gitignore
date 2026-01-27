@@ -1,0 +1,10 @@
+VAE_CNN.ipynb
+data/
+*.mp4
+data_formatter.py
+architecture.py
+todo.txt
+__pycache__
+runs
+model_use.py
+precompute_mel.py
