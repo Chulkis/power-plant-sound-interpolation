@@ -1,6 +1,6 @@
 import torch
 import os
-import torchaudio
+import soundfile as sf
 
 from config import *
 
@@ -19,7 +19,8 @@ def save_interpolation(model, a, b, mel_to_wav, out_dir, steps=9):
         wav = mel_to_wav(mel_hat[0].cpu())
 
         path = os.path.join(out_dir, f"interp_{i:02d}.wav")
-        torchaudio.save(path, wav.unsqueeze(0), SR)
+        wav = wav.squeeze().cpu().numpy()
+        sf.write(path, wav, SR)
 
     if was_training:
         model.train()
