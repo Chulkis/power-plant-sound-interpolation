@@ -1,11 +1,12 @@
 SR = 48000
 SEGMENT_LEN = 48000
 
-N_MELS = 128
+N_MELS = 64
 N_FFT = 1024
 HOP = 512
+TARGET_T = 96
 
-DATA_ROOT = "data/dataset/ToyCar"
+DATA_ROOT = "data/dataset/ToyADMOS_mel"
 BATCH_SIZE = 16
 LR = 2e-4
 EPOCHS = 20

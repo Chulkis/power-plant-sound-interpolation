@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 import time
 
 from models.cond_vae import AudioCondVAE
-from dataset_files.dataset import ToyADMOSDataset
+from dataset_files.mel_dataset import Mel_ToyADMOSDataset
 from models.tabular import TabularSpec
 from losses.vae import vae_loss
 from config import *
@@ -33,14 +33,14 @@ def main():
         numerical=["voltage"]
     )
 
-    ds = ToyADMOSDataset(os.path.join(DATA_ROOT, "train"), augment=True)
+    ds = Mel_ToyADMOSDataset(os.path.join(DATA_ROOT, "train"), augment=True)
     dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, drop_last=True, pin_memory=True)
 
     model = AudioCondVAE(tab_spec)
     model = model.to(device)
     opt = torch.optim.Adam(model.parameters(), lr=LR)
 
-    ref_ds = ToyADMOSDataset(os.path.join(DATA_ROOT, "train"), augment=False)
+    ref_ds = Mel_ToyADMOSDataset(os.path.join(DATA_ROOT, "train"), augment=False)
 
     ref_a = ref_ds[10]
     ref_b = ref_ds[200]
@@ -53,9 +53,11 @@ def main():
             {kk: vv.unsqueeze(0).to(device) for kk, vv in v.items()}
             for k, v in ref_b.items()}
     
+    best_loss = float('inf')
+
     for epoch in range(1, EPOCHS + 1):
         model.train()
-        total_loss = 0.0
+        loss = 0.0
 
         for batch in tqdm(dl, desc=f"Epoch {epoch}/{EPOCHS}"):
             mel = batch["mel"].to(device)

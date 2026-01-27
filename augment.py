@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 import random
 
+# Аугментации для wav
 
 def add_noise(wav, min_snr=25, max_snr=45):
     snr = torch.empty(1).uniform_(min_snr, max_snr)
@@ -47,3 +48,35 @@ def motor_augment(wav, p=0.8):
         wav = random_lowpass(wav)
 
     return wav
+
+# Аугментации для mel
+
+def freq_mask(mel, max_width=8):
+    f = mel.size(1)
+    w = random.randint(0, max_width)
+    f0 = random.randint(0, f - w)
+    mel[:, f0:f0+w, :] = 0
+    return mel
+
+def time_mask(mel, max_width=16):
+    t = mel.size(2)
+    w = random.randint(0, max_width)
+    t0 = random.randint(0, t - w)
+    mel[:, :, t0:t0+w] = 0
+    return mel
+
+def mel_augment(mel):
+    if random.random() < 0.5:
+        mel = mel * random.uniform(0.98, 1.02)
+        mel = mel + random.uniform(-0.05, 0.05)
+
+    if random.random() < 0.5:
+        mel = mel + torch.randn_like(mel) * 0.001
+
+    if random.random() < 0.3:
+        mel = freq_mask(mel, 1)
+
+    if random.random() < 0.3:
+        mel = time_mask(mel, 2)
+
+    return mel

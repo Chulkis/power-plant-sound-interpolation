@@ -8,3 +8,5 @@ __pycache__
 runs
 model_use.py
 precompute_mel.py
+inspect_cash.py
+*.wav
