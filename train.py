@@ -1,7 +1,7 @@
 import os
 import torch
 from tqdm import tqdm
-import random, torch, numpy as np
+import random, numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import time
