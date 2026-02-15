@@ -68,6 +68,12 @@ def main():
             out = model(mel, u_cat, u_num)
 
             mel_hat = out["mel_hat"]
+
+            # BETA в зависимости от эпохи
+            beta_fit = (0 if epoch<=EPOCH_LINEAR_DOWN 
+                        else (epoch-EPOCH_LINEAR_DOWN)*(BETA_AVG-BETA_DOWN)/(EPOCH_LINEAR_UP-EPOCH_LINEAR_DOWN)+BETA_DOWN if EPOCH_LINEAR_DOWN<epoch<=EPOCH_LINEAR_UP 
+                        else (epoch-EPOCH_LINEAR_UP)*(BETA_UP-BETA_AVG)/(EPOCHS-EPOCH_LINEAR_UP)+BETA_AVG)
+            
             losses = vae_loss(mel=mel,
                 mel_hat=mel_hat,
                 mu=out["mu"],
@@ -76,7 +82,8 @@ def main():
                 u_num=u_num,
                 cat_logits=out["cat_logits"],
                 u_cat=u_cat,
-                beta=BETA, return_dict=True)
+                beta=beta_fit,
+                return_dict=True)
             
             loss = losses["total"]
 
@@ -123,7 +130,7 @@ def main():
 
         if avg_loss < best_loss:
             best_loss = avg_loss
-            torch.save(model.state_dict(), "checkpoints/best.pt")
+            torch.save(model.state_dict(), f"checkpoints/best_epoch{epoch}.pt")
 
 if __name__ == "__main__":
     main()

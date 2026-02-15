@@ -20,7 +20,8 @@ class AudioCondVAE(nn.Module):
         self.mu = nn.Linear(256, z_dim)
         self.logvar = nn.Linear(256, z_dim)
 
-        self.x_dec = AudioDecoder(z_dim=z_dim)
+        self.x_dec = AudioDecoder(z_dim=z_dim, cond_dim=d_model)
+
         self.u_head = TabularHead(z_dim=z_dim, spec=tab_spec)
 
     def encode(self, mel, u_cat, u_num):
@@ -29,11 +30,17 @@ class AudioCondVAE(nn.Module):
         h = self.fuse(torch.cat([x_feat, u_feat], dim=1))
         return self.mu(h), self.logvar(h)
 
+    def decode(self, z, u_cat, u_num):
+        u_feat = self.u_enc(u_cat, u_num)
+        zc = torch.cat([z, u_feat], dim=1)
+        mel_hat = self.x_dec(zc)
+        return mel_hat
+
     def forward(self, mel, u_cat, u_num):
         mu, logvar = self.encode(mel, u_cat, u_num)
         z = reparameterize(mu, logvar)
 
-        mel_hat = self.x_dec(z)
+        mel_hat = self.decode(z, u_cat, u_num)
         cat_logits, num_pred = self.u_head(z)
 
         return {

@@ -15,7 +15,13 @@ def save_interpolation(model, a, b, mel_to_wav, out_dir, steps=9):
 
     for i, t in enumerate(torch.linspace(0, 1, steps)):
         z = (1 - t) * mu1 + t * mu2
-        mel_hat = model.x_dec(z)
+
+        u_num_interp = {
+            "voltage": (1 - t) * a["u_num"]["voltage"] + t * b["u_num"]["voltage"]
+        }
+        u_cat_interp = a["u_cat"]
+
+        mel_hat = model.decode(z, u_cat_interp, u_num_interp)
         wav = mel_to_wav(mel_hat[0].cpu())
 
         path = os.path.join(out_dir, f"interp_{i:02d}.wav")
@@ -24,4 +30,5 @@ def save_interpolation(model, a, b, mel_to_wav, out_dir, steps=9):
 
     if was_training:
         model.train()
+
 

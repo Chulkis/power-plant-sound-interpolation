@@ -1,14 +1,14 @@
 import torch
 import torch.nn.functional as F
 
-from config import BETA
+from config import BETA_DOWN
 
 def kl_divergence(mu, logvar):
     return 0.5 * torch.mean(torch.sum(
         torch.exp(logvar) + mu**2 - 1.0 - logvar, dim=1))
 
 def vae_loss(mel, mel_hat, mu, logvar, num_pred, u_num,
-             cat_logits, u_cat, beta=BETA, return_dict=False):
+             cat_logits, u_cat, beta=BETA_DOWN, return_dict=False):
 
     recon = F.l1_loss(mel_hat, mel)
     kl = kl_divergence(mu, logvar)
@@ -16,7 +16,7 @@ def vae_loss(mel, mel_hat, mu, logvar, num_pred, u_num,
     voltage_loss = F.mse_loss(num_pred["voltage"], u_num["voltage"])
 
     toy_loss = F.cross_entropy(cat_logits["toy_id"], u_cat["toy_id"])
-    total = recon + beta * kl + voltage_loss + toy_loss
+    total = recon + beta * kl + 2*voltage_loss + toy_loss
     losses = {
     "total": total,
     "recon": recon,
